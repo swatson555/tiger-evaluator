@@ -109,7 +109,7 @@ exp : INT                             { $$=A_IntExp(EM_tokPos,$1); }
     | ID LPAREN exps RPAREN           { $$=A_CallExp(EM_tokPos,S_Symbol($1),$3); }
 
 field : ID COLON ID          { $$=A_Field(EM_tokPos,S_Symbol($1),S_Symbol($3)); }
-fields :                     { $$=NULL }
+fields :                     { $$=NULL; }
        | field               { $$=A_FieldList($1,NULL); }
        | field COMMA fields  { $$=A_FieldList($1,$3); }
 
