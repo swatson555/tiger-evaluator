@@ -17,7 +17,7 @@ struct expty {
 struct expty expTy(Tr_exp exp, Ty_ty ty);
 Ty_fieldList transFields(S_table tenv, A_fieldList records);
 Ty_tyList transParams(S_table tenv, A_fieldList params);
-Ty_ty transTy(S_table tenv, A_ty a);
+Ty_ty transTy(S_table tenv, S_symbol name, A_ty a);
 void transDec(S_table venv, S_table tenv, A_dec d);
 struct expty transExp(S_table venv, S_table tenv, A_exp exp);
 struct expty transVar(S_table venv, S_table tenv, A_var var);
@@ -73,11 +73,12 @@ Ty_tyList transParams(S_table tenv, A_fieldList params) {
     return Ty_TyList(Ty_Name(params->head->name, typeid), transParams(tenv, params->tail));
 }
 
-Ty_ty transTy(S_table tenv, A_ty ty) {
+Ty_ty transTy(S_table tenv, S_symbol name, A_ty ty) {
   switch (ty->kind) {
   case A_nameTy:
-    return Ty_Name(ty->u.name, S_look(tenv, ty->u.name));
+    return Ty_Name(name, S_look(tenv, ty->u.name));
   case A_recordTy:
+    S_enter(tenv, name, Ty_Nil());
     return Ty_Record(transFields(tenv, ty->u.record));
   case A_arrayTy:
     return Ty_Array(S_look(tenv, ty->u.array));
@@ -102,9 +103,7 @@ void transDec(S_table venv, S_table tenv, A_dec dec) {
     break;
   case A_typeDec:
     for (A_nametyList ts=dec->u.type; ts; ts=ts->tail)
-      S_enter(tenv, ts->head->name, Ty_Nil());
-    for (A_nametyList ts=dec->u.type; ts; ts=ts->tail)
-      S_enter(tenv, ts->head->name, transTy(tenv, ts->head->ty));
+      S_enter(tenv, ts->head->name, transTy(tenv, ts->head->name, ts->head->ty));
     break;
   case A_functionDec: {
     // Put header information here.
