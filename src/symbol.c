@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "util.h"
 #include "symbol.h"
@@ -37,7 +38,15 @@ S_symbol S_Symbol(string name)
  hashtable[index]=sym;
  return sym;
 }
- 
+
+int gensyms = 0;
+S_symbol S_gensym() {
+  string gensym = "gensym";
+  char buffer[50];
+  snprintf(buffer, 50, "%d", gensyms++);
+  return S_Symbol(strcat(strdup(gensym), buffer));
+}
+
 string S_name(S_symbol sym)
 {
  return sym->name;

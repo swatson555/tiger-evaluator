@@ -10,6 +10,10 @@ typedef struct S_symbol_ *S_symbol;
  *  value, even if the "foo" strings are at different locations. */
 S_symbol S_Symbol(string);
 
+/* Create a unique symbol
+ */
+S_symbol S_gensym();
+
 /* Extract the underlying string from a symbol */
 string S_name(S_symbol);
 

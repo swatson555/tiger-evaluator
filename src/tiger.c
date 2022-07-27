@@ -23,7 +23,7 @@ void evalfromfilename(string filename, int showast, S_table valueenv) {
   if (showast)
     printast(exp);
   SEM_transProg(exp);
-  val result = evalexp(exp, valueenv);
+  val result = eval(exp, valueenv);
   printval(result);
 }
 
@@ -32,7 +32,7 @@ void evalfromstring(string syntax, int showast, S_table valueenv) {
   if (showast)
     printast(exp);
   SEM_transProg(exp);
-  val result = evalexp(exp, valueenv);
+  val result = eval(exp, valueenv);
   printval(result);
 }
 
@@ -42,7 +42,7 @@ void repl(S_table valueenv) {
   while(fgets(buffer, 128, stdin)) {
     A_exp exp = parsestring(buffer);
     SEM_transProg(exp);
-    val result = evalexp(exp, valueenv);
+    val result = eval(exp, valueenv);
     printval(result);
     printf("tiger>> ");
   }

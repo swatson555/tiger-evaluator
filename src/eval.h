@@ -13,7 +13,7 @@ struct _val {
 typedef struct _val* val;
 
 // evaluate an tiger expresion
-val evalexp(A_exp exp, S_table venv);
+val eval(A_exp exp, S_table venv);
 
 // display a datum to stdout
 void printval(val v);
