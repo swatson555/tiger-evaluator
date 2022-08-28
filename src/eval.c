@@ -67,7 +67,7 @@ val recordVal(A_efieldList fields, S_table venv, S_symbol done, bool loop) {
 val evalif(void* iff, S_table venv, S_symbol done, bool loop) {
   struct {A_exp test, then, elsee;}* ifptr = iff;
   val testeval = evalexp(ifptr->test, venv, done, loop);
-  if (testeval->u.integer > 0) {
+  if (testeval->u.integer != 0) {
     return evalexp(ifptr->then, venv, done, loop);
   }
   if (ifptr->elsee) {
@@ -81,26 +81,32 @@ val evalop(void* op, S_table venv, S_symbol done, bool loop) {
   val lefteval = evalexp(opptr->left, venv, done, loop);
   val righteval = evalexp(opptr->right, venv, done, loop);
   switch (opptr->oper) {
-    case A_plusOp:
-      return integerVal(lefteval->u.integer + righteval->u.integer);
-    case A_minusOp:
-      return integerVal(lefteval->u.integer - righteval->u.integer);
-    case A_timesOp:
-      return integerVal(lefteval->u.integer * righteval->u.integer);
-    case A_divideOp:
-      return integerVal(lefteval->u.integer / righteval->u.integer);
-    case A_eqOp:
+  case A_plusOp:
+    return integerVal(lefteval->u.integer + righteval->u.integer);
+  case A_minusOp:
+    return integerVal(lefteval->u.integer - righteval->u.integer);
+  case A_timesOp:
+    return integerVal(lefteval->u.integer * righteval->u.integer);
+  case A_divideOp:
+    return integerVal(lefteval->u.integer / righteval->u.integer);
+  case A_eqOp:
+    if (lefteval->kind == V_string && righteval->kind == V_string)
+      return integerVal(strcmp(lefteval->u.string, righteval->u.string) == 0);
+    else
       return integerVal(lefteval->u.integer == righteval->u.integer);
-    case A_neqOp:
+  case A_neqOp:
+    if (lefteval->kind == V_string && righteval->kind == V_string)
+      return integerVal(strcmp(lefteval->u.string, righteval->u.string) != 0);
+    else
       return integerVal(lefteval->u.integer != righteval->u.integer);
-    case A_ltOp:
-      return integerVal(lefteval->u.integer < righteval->u.integer);
-    case A_leOp:
-      return integerVal(lefteval->u.integer <= righteval->u.integer);
-    case A_gtOp:
-      return integerVal(lefteval->u.integer > righteval->u.integer);
-    case A_geOp:
-      return integerVal(lefteval->u.integer >= righteval->u.integer);
+  case A_ltOp:
+    return integerVal(lefteval->u.integer < righteval->u.integer);
+  case A_leOp:
+    return integerVal(lefteval->u.integer <= righteval->u.integer);
+  case A_gtOp:
+    return integerVal(lefteval->u.integer > righteval->u.integer);
+  case A_geOp:
+    return integerVal(lefteval->u.integer >= righteval->u.integer);
   }
 }
 
@@ -128,7 +134,7 @@ val evalassign(void* assign, S_table venv, S_symbol done, bool loop) {
   val rval = evalexp(assignptr->exp, venv, done, loop);
   switch (assignptr->var->kind) {
   case A_simpleVar: {
-    S_enter(venv, assignptr->var->u.simple, rval);
+    *(val)S_look(venv, assignptr->var->u.simple) = *rval;
     break;
   }
   case A_fieldVar: {
@@ -178,7 +184,7 @@ val evalcall(void* call, S_table venv, S_symbol done, bool loop) {
   } else if (strcmp(S_name(callptr->func), "getchar") == 0) {
     // function getchar() : string
     // Read a character from standard input; return empty string on end of file.
-    int c = getchar();
+    int c = getc(stdin);
     string charstring = malloc(2);
     if (c == EOF)
       charstring[0] = '\0';
@@ -261,7 +267,7 @@ val evalwhile(void* whilee, S_table venv, S_symbol done, bool loop) {
   struct {A_exp test, body;}* whileptr = whilee;
   S_symbol s = S_gensym();
   S_enter(venv, s, (void*)0);
-  while (evalexp(whileptr->test, venv, done, loop)->u.integer && !S_look(venv, s))
+  while (evalexp(whileptr->test, venv, done, loop)->u.integer != 0 && !S_look(venv, s))
     evalexp(whileptr->body, venv, s, TRUE);
   return voidVal();
 }
